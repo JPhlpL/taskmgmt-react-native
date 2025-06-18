@@ -37,7 +37,11 @@ export default function RootLayout() {
       tokenCache={tokenCache}
     >
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
+        <Stack
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
           <Stack.Screen name="(home)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
         </Stack>

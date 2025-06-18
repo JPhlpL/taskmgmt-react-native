@@ -1,17 +1,28 @@
 import { useSignIn } from '@clerk/clerk-expo';
-import { Link, useRouter } from 'expo-router';
+import { router } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  View
+} from 'react-native';
 
 export default function SignInScreen() {
   const { signIn, setActive, isLoaded } = useSignIn();
-  const router = useRouter();
 
   const [emailAddress, setEmailAddress] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const onSignInPress = async () => {
     if (!isLoaded) return;
+    setIsLoading(true);
 
     try {
       const signInAttempt = await signIn.create({
@@ -24,66 +35,186 @@ export default function SignInScreen() {
         router.replace('/');
       } else {
         console.error(JSON.stringify(signInAttempt, null, 2));
+        Alert.alert('Error', 'Sign in failed. Please try again.');
       }
     } catch (err) {
       console.error(JSON.stringify(err, null, 2));
+      Alert.alert('Error', 'Invalid email or password. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.heading}>Sign In</Text>
-      <TextInput
-        autoCapitalize="none"
-        placeholder="Email"
-        placeholderTextColor="#999"
-        value={emailAddress}
-        onChangeText={setEmailAddress}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Password"
-        placeholderTextColor="#999"
-        value={password}
-        secureTextEntry
-        onChangeText={setPassword}
-        style={styles.input}
-      />
-      <TouchableOpacity onPress={onSignInPress} style={styles.button}>
-        <Text style={styles.buttonText}>Continue</Text>
-      </TouchableOpacity>
+  const handleSignUpPress = () => {
+    router.push('/(auth)/sign-up');
+  };
 
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Don't have an account?</Text>
-        <Link href="/(auth)/sign-up">
-          <Text style={styles.link}> Sign up</Text>
-        </Link>
-      </View>
-    </View>
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" />
+      <ScrollView style={styles.container}>
+        <View style={styles.content}>
+          <View style={styles.headerSection}>
+            <View style={styles.logoContainer}>
+              <View style={styles.logoCircle}>
+                <Text style={styles.logoText}>T</Text>
+              </View>
+            </View>
+            
+            <Text style={styles.title}>Welcome Back</Text>
+            <Text style={styles.subtitle}>Sign in to your TaskMgmt account</Text>
+          </View>
+
+          <View style={styles.formContainer}>
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Email</Text>
+              <TextInput
+                autoCapitalize="none"
+                placeholder="Enter your email"
+                placeholderTextColor="#6b7280"
+                value={emailAddress}
+                onChangeText={setEmailAddress}
+                style={styles.input}
+                keyboardType="email-address"
+                autoComplete="email"
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Password</Text>
+              <TextInput
+                placeholder="Enter your password"
+                placeholderTextColor="#6b7280"
+                value={password}
+                secureTextEntry
+                onChangeText={setPassword}
+                style={styles.input}
+                autoComplete="password"
+              />
+            </View>
+
+            <Pressable 
+              onPress={onSignInPress} 
+              style={[styles.signInButton, isLoading && styles.buttonDisabled]}
+              disabled={isLoading || !emailAddress || !password}
+            >
+              <Text style={styles.signInButtonText}>
+                {isLoading ? 'Signing In...' : 'Sign In'}
+              </Text>
+            </Pressable>
+          </View>
+
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Don't have an account?</Text>
+            <Pressable onPress={handleSignUpPress}>
+              <Text style={styles.footerLink}>Create Account</Text>
+            </Pressable>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, justifyContent: 'center', backgroundColor: '#000' },
-  heading: { fontSize: 28, fontWeight: 'bold', color: '#fff', marginBottom: 24, textAlign: 'center' },
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#0a0a0f',
+  },
+  container: {
+    flex: 1,
+    backgroundColor: '#0a0a0f',
+  },
+  content: {
+    padding: 24,
+    paddingTop: 60,
+    paddingBottom: 100,
+  },
+  headerSection: {
+    alignItems: 'center',
+    marginBottom: 48,
+  },
+  logoContainer: {
+    marginBottom: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#6366f1',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoText: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#9ca3af',
+    textAlign: 'center',
+  },
+  formContainer: {
+    backgroundColor: '#12121a',
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 32,
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 8,
+  },
   input: {
-    backgroundColor: '#1c1c1e',
-    color: '#fff',
+    backgroundColor: '#1f1f2e',
+    color: '#ffffff',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginBottom: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
     fontSize: 16,
   },
-  button: {
-    backgroundColor: '#007aff',
-    paddingVertical: 14,
-    borderRadius: 8,
+  signInButton: {
+    backgroundColor: '#6366f1',
+    paddingVertical: 16,
+    borderRadius: 12,
     alignItems: 'center',
-    marginBottom: 16,
+    marginTop: 8,
   },
-  buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
-  footer: { flexDirection: 'row', justifyContent: 'center' },
-  footerText: { color: '#999' },
-  link: { color: '#00aaff', fontWeight: 'bold' },
+  buttonDisabled: {
+    backgroundColor: '#4b5563',
+  },
+  signInButtonText: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  footerText: {
+    color: '#9ca3af',
+    fontSize: 14,
+    marginRight: 4,
+  },
+  footerLink: {
+    color: '#6366f1',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
 });
