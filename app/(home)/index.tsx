@@ -1,4 +1,6 @@
+import { Header } from "@/components/Header";
 import { SignOutButton } from "@/components/SignOutButton";
+import { useTheme } from "@/context/ThemeContext";
 import { SignedIn, SignedOut, useUser } from "@clerk/clerk-expo";
 import { router } from "expo-router";
 import {
@@ -13,6 +15,7 @@ import {
 
 export default function Home() {
   const { user } = useUser();
+  const { isDarkMode } = useTheme();
 
   const handleSignInPress = () => {
     router.push("/(auth)/sign-in");
@@ -27,17 +30,78 @@ export default function Home() {
     console.log("Create task pressed");
   };
 
+  // Dynamic styles based on theme
+  const dynamicStyles = {
+    safeArea: {
+      backgroundColor: isDarkMode ? '#0a0a0f' : '#f8fafc',
+    },
+    container: {
+      backgroundColor: isDarkMode ? '#0a0a0f' : '#f8fafc',
+    },
+    welcomeSection: {
+      backgroundColor: isDarkMode ? '#12121a' : '#ffffff',
+    },
+    dashboardHeading: {
+      color: isDarkMode ? '#ffffff' : '#1f2937',
+    },
+    welcomeText: {
+      color: isDarkMode ? '#9ca3af' : '#6b7280',
+    },
+    statsCard: {
+      backgroundColor: isDarkMode ? '#12121a' : '#ffffff',
+    },
+    statsIcon: {
+      backgroundColor: isDarkMode ? '#1f1f2e' : '#f3f4f6',
+    },
+    statsTitle: {
+      color: isDarkMode ? '#ffffff' : '#1f2937',
+    },
+    statsSubtitle: {
+      color: isDarkMode ? '#9ca3af' : '#6b7280',
+    },
+    actionCard: {
+      backgroundColor: isDarkMode ? '#1a1a2e' : '#f8fafc',
+      borderColor: isDarkMode ? '#2d2d4a' : '#e5e7eb',
+    },
+    actionTitle: {
+      color: isDarkMode ? '#ffffff' : '#1f2937',
+    },
+    actionSubtitle: {
+      color: isDarkMode ? '#9ca3af' : '#6b7280',
+    },
+    appTitle: {
+      color: isDarkMode ? '#ffffff' : '#1f2937',
+    },
+    tagline: {
+      color: isDarkMode ? '#9ca3af' : '#6b7280',
+    },
+    secondaryButton: {
+      backgroundColor: isDarkMode ? '#1f1f2e' : '#ffffff',
+      borderColor: isDarkMode ? 'transparent' : '#d1d5db',
+    },
+    secondaryButtonText: {
+      color: isDarkMode ? '#ffffff' : '#1f2937',
+    },
+    featuresTitle: {
+      color: isDarkMode ? '#ffffff' : '#1f2937',
+    },
+    featureText: {
+      color: isDarkMode ? '#9ca3af' : '#6b7280',
+    },
+  };
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" />
-      <View style={styles.container}>
+    <SafeAreaView style={[styles.safeArea, dynamicStyles.safeArea]}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
+      <Header/>
+      <View style={[styles.container, dynamicStyles.container]}>
         <SignedIn>
           <ScrollView style={styles.dashboardContainer}>
             <View style={styles.dashboardContent}>
               <View style={styles.header}>
-                <View style={styles.welcomeSection}>
-                  <Text style={styles.dashboardHeading}>Dashboard</Text>
-                  <Text style={styles.welcomeText}>Welcome back,</Text>
+                <View style={[styles.welcomeSection, dynamicStyles.welcomeSection]}>
+                  <Text style={[styles.dashboardHeading, dynamicStyles.dashboardHeading]}>Dashboard</Text>
+                  <Text style={[styles.welcomeText, dynamicStyles.welcomeText]}>Welcome back,</Text>
                   <Text style={styles.userEmail}>
                     {user?.emailAddresses[0].emailAddress}
                   </Text>
@@ -45,21 +109,21 @@ export default function Home() {
               </View>
               
               <View style={styles.statsContainer}>
-                <View style={styles.statsCard}>
+                <View style={[styles.statsCard, dynamicStyles.statsCard]}>
                   <View style={styles.statsHeader}>
-                    <View style={styles.statsIcon}>
+                    <View style={[styles.statsIcon, dynamicStyles.statsIcon]}>
                       <Text style={styles.statsIconText}>📊</Text>
                     </View>
                     <View style={styles.statsContent}>
-                      <Text style={styles.statsTitle}>Quick Stats</Text>
-                      <Text style={styles.statsSubtitle}>Your productivity overview</Text>
+                      <Text style={[styles.statsTitle, dynamicStyles.statsTitle]}>Quick Stats</Text>
+                      <Text style={[styles.statsSubtitle, dynamicStyles.statsSubtitle]}>Your productivity overview</Text>
                     </View>
                   </View>
                 </View>
                 
-                <View style={styles.actionCard}>
-                  <Text style={styles.actionTitle}>Ready to be productive?</Text>
-                  <Text style={styles.actionSubtitle}>Start managing your tasks efficiently</Text>
+                <View style={[styles.actionCard, dynamicStyles.actionCard]}>
+                  <Text style={[styles.actionTitle, dynamicStyles.actionTitle]}>Ready to be productive?</Text>
+                  <Text style={[styles.actionSubtitle, dynamicStyles.actionSubtitle]}>Start managing your tasks efficiently</Text>
                   <Pressable style={styles.actionButton} onPress={handleCreateTaskPress}>
                     <Text style={styles.actionButtonText}>Create Task</Text>
                   </Pressable>
@@ -83,8 +147,8 @@ export default function Home() {
                   </View>
                 </View>
                 
-                <Text style={styles.appTitle}>TaskMgmt</Text>
-                <Text style={styles.tagline}>
+                <Text style={[styles.appTitle, dynamicStyles.appTitle]}>TaskMgmt</Text>
+                <Text style={[styles.tagline, dynamicStyles.tagline]}>
                   Organize your tasks, amplify your productivity
                 </Text>
               </View>
@@ -98,26 +162,26 @@ export default function Home() {
                 </Pressable>
 
                 <Pressable 
-                  style={[styles.authButton, styles.secondaryButton]}
+                  style={[styles.authButton, styles.secondaryButton, dynamicStyles.secondaryButton]}
                   onPress={handleSignUpPress}
                 >
-                  <Text style={styles.secondaryButtonText}>Create Account</Text>
+                  <Text style={[styles.secondaryButtonText, dynamicStyles.secondaryButtonText]}>Create Account</Text>
                 </Pressable>
               </View>
 
               <View style={styles.featuresList}>
-                <Text style={styles.featuresTitle}>Why choose TaskMgmt?</Text>
+                <Text style={[styles.featuresTitle, dynamicStyles.featuresTitle]}>Why choose TaskMgmt?</Text>
                 <View style={styles.featureItem}>
                   <Text style={styles.featureIcon}>✨</Text>
-                  <Text style={styles.featureText}>Simple and intuitive interface</Text>
+                  <Text style={[styles.featureText, dynamicStyles.featureText]}>Simple and intuitive interface</Text>
                 </View>
                 <View style={styles.featureItem}>
                   <Text style={styles.featureIcon}>🚀</Text>
-                  <Text style={styles.featureText}>Boost your productivity</Text>
+                  <Text style={[styles.featureText, dynamicStyles.featureText]}>Boost your productivity</Text>
                 </View>
                 <View style={styles.featureItem}>
                   <Text style={styles.featureIcon}>🔒</Text>
-                  <Text style={styles.featureText}>Secure and private</Text>
+                  <Text style={[styles.featureText, dynamicStyles.featureText]}>Secure and private</Text>
                 </View>
               </View>
             </View>
@@ -131,11 +195,9 @@ export default function Home() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#0a0a0f',
   },
   container: {
     flex: 1,
-    backgroundColor: '#0a0a0f',
   },
   
   // Dashboard Styles
@@ -152,19 +214,24 @@ const styles = StyleSheet.create({
   welcomeSection: {
     alignItems: 'center',
     padding: 32,
-    backgroundColor: '#12121a',
     borderRadius: 20,
     marginTop: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   dashboardHeading: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#ffffff',
     marginBottom: 8,
   },
   welcomeText: {
     fontSize: 18,
-    color: '#9ca3af',
     marginBottom: 4,
   },
   userEmail: {
@@ -177,10 +244,17 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   statsCard: {
-    backgroundColor: '#12121a',
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   statsHeader: {
     flexDirection: 'row',
@@ -190,7 +264,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#1f1f2e',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
@@ -204,30 +277,26 @@ const styles = StyleSheet.create({
   statsTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#ffffff',
     marginBottom: 2,
   },
   statsSubtitle: {
     fontSize: 14,
-    color: '#9ca3af',
   },
   
   actionCard: {
-    backgroundColor: '#1a1a2e',
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
+    borderWidth: 1,
   },
   actionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#ffffff',
     marginBottom: 8,
     textAlign: 'center',
   },
   actionSubtitle: {
     fontSize: 14,
-    color: '#9ca3af',
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -254,7 +323,7 @@ const styles = StyleSheet.create({
   },
   authContent: {
     padding: 24,
-    paddingTop: 60,
+    paddingTop: 20,
     paddingBottom: 100,
   },
   heroSection: {
@@ -273,6 +342,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#6366f1',
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#6366f1',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   logoText: {
     fontSize: 32,
@@ -282,13 +359,11 @@ const styles = StyleSheet.create({
   appTitle: {
     fontSize: 36,
     fontWeight: 'bold',
-    color: '#ffffff',
     marginBottom: 12,
     textAlign: 'center',
   },
   tagline: {
     fontSize: 16,
-    color: '#9ca3af',
     textAlign: 'center',
     paddingHorizontal: 20,
   },
@@ -309,9 +384,25 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     backgroundColor: '#6366f1',
+    shadowColor: '#6366f1',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   secondaryButton: {
-    backgroundColor: '#1f1f2e',
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   primaryButtonText: {
     color: '#ffffff',
@@ -319,7 +410,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   secondaryButtonText: {
-    color: '#ffffff',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -331,7 +421,6 @@ const styles = StyleSheet.create({
   featuresTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#ffffff',
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -348,7 +437,6 @@ const styles = StyleSheet.create({
   },
   featureText: {
     fontSize: 14,
-    color: '#9ca3af',
     flex: 1,
   },
 });
