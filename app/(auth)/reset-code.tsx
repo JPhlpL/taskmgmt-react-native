@@ -9,44 +9,56 @@ import { router } from "expo-router"
 import React from "react"
 import { Pressable, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TextInput, View } from "react-native"
 
-export default function SignInScreen() {
-  const { signIn, setActive, isLoaded } = useSignIn()
+export default function ResetPasswordScreen() {
+  const { signIn, isLoaded } = useSignIn()
   const { isDarkMode } = useTheme()
   const { showLoading, hideLoading, showSuccess, showError, showWarning } = useModal()
 
   const [emailAddress, setEmailAddress] = React.useState("")
-  const [password, setPassword] = React.useState("")
 
-  const onSignInPress = async () => {
-    if (!isLoaded) return
+  const handleResetPassword = async () => {
+    if (!emailAddress.trim()) {
+      showWarning("Please enter your email address.", "Email Required")
+      return
+    }
 
-    showLoading("Signing you in...")
+    if (!isLoaded || !signIn) {
+      showError("Authentication module not ready. Please try again shortly.", "Try Again")
+      return
+    }
+
+    showLoading("Sending password reset email...")
 
     try {
-      const signInAttempt = await signIn.create({
+      console.log("=== INITIATING PASSWORD RESET ===")
+      console.log("Email:", emailAddress)
+
+      // Use the correct Clerk API for password reset
+      const result = await signIn.create({
+        strategy: "reset_password_email_code",
         identifier: emailAddress,
-        password,
       })
 
-      if (signInAttempt.status === "complete") {
-        await setActive({ session: signInAttempt.createdSessionId })
-        hideLoading()
+      console.log("Reset password request result:", JSON.stringify(result, null, 2))
+      console.log("SignIn status after create:", signIn.status)
 
-        const successConfig = ErrorHandler.getSuccessMessage("signin")
-        showSuccess(successConfig.message, successConfig.title, false)
+      hideLoading()
+      showSuccess(
+        `Password reset instructions have been sent to ${emailAddress}. Please check your email and enter the verification code on the next screen.`,
+        "Reset Email Sent",
+        false,
+      )
 
-        // Navigate after showing success
-        setTimeout(() => {
-          router.replace("/")
-        }, 1500)
-      } else {
-        hideLoading()
-        console.error("Sign in incomplete:", JSON.stringify(signInAttempt, null, 2))
-        showError("Sign in incomplete. Please try again.", "Authentication Failed")
-      }
+      // Navigate to reset code verification after showing success
+      setTimeout(() => {
+        router.push({
+          pathname: "/(auth)/reset-code",
+          params: { email: emailAddress },
+        })
+      }, 2000)
     } catch (err: any) {
       hideLoading()
-      console.error("Sign in error:", JSON.stringify(err, null, 2))
+      console.error("Reset password error:", JSON.stringify(err, null, 2))
 
       const errorConfig = ErrorHandler.parseClerkError(err)
 
@@ -58,13 +70,8 @@ export default function SignInScreen() {
     }
   }
 
-  const handleSignUpPress = () => {
-    router.push("/(auth)/sign-up")
-  }
-
-  const handleForgotPassword = () => {
-    // Navigate to reset password page
-    router.push("/(auth)/reset-password")
+  const handleBackToSignIn = () => {
+    router.back()
   }
 
   // Dynamic styles based on theme
@@ -92,10 +99,14 @@ export default function SignInScreen() {
       color: isDarkMode ? "#ffffff" : "#1f2937",
       borderColor: isDarkMode ? "#2d2d4a" : "#e5e7eb",
     },
-    forgotPasswordText: {
-      color: isDarkMode ? "#9ca3af" : "#6b7280",
+    secondaryButton: {
+      backgroundColor: isDarkMode ? "#1f1f2e" : "#ffffff",
+      borderColor: isDarkMode ? "#2d2d4a" : "#d1d5db",
     },
-    footerText: {
+    secondaryButtonText: {
+      color: isDarkMode ? "#ffffff" : "#1f2937",
+    },
+    helpText: {
       color: isDarkMode ? "#9ca3af" : "#6b7280",
     },
   }
@@ -103,66 +114,52 @@ export default function SignInScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, dynamicStyles.safeArea]}>
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
-      <Header />
+      <Header showBackButton onBackPress={handleBackToSignIn} />
       <ScrollView style={[styles.container, dynamicStyles.container]}>
         <View style={styles.content}>
           <View style={styles.headerSection}>
             <View style={styles.logoContainer}>
               <View style={styles.logoCircle}>
-                <Text style={styles.logoText}>T</Text>
+                <Text style={styles.logoText}>🔑</Text>
               </View>
             </View>
 
-            <Text style={[styles.title, dynamicStyles.title]}>Welcome Back</Text>
-            <Text style={[styles.subtitle, dynamicStyles.subtitle]}>Sign in to your TaskMgmt account</Text>
+            <Text style={[styles.title, dynamicStyles.title]}>Reset Password</Text>
+            <Text style={[styles.subtitle, dynamicStyles.subtitle]}>
+              Enter your email address and we'll send you a verification code to reset your password
+            </Text>
           </View>
 
           <View style={[styles.formContainer, dynamicStyles.formContainer]}>
             <View style={styles.inputContainer}>
-              <Text style={[styles.inputLabel, dynamicStyles.inputLabel]}>Email</Text>
+              <Text style={[styles.inputLabel, dynamicStyles.inputLabel]}>Email Address</Text>
               <TextInput
                 autoCapitalize="none"
-                placeholder="Enter your email"
+                placeholder="Enter your email address"
                 placeholderTextColor={isDarkMode ? "#6b7280" : "#9ca3af"}
                 value={emailAddress}
                 onChangeText={setEmailAddress}
                 style={[styles.input, dynamicStyles.input]}
                 keyboardType="email-address"
                 autoComplete="email"
+                autoFocus
               />
             </View>
 
-            <View style={styles.inputContainer}>
-              <View style={styles.passwordHeader}>
-                <Text style={[styles.inputLabel, dynamicStyles.inputLabel]}>Password</Text>
-                <Pressable onPress={handleForgotPassword}>
-                  <Text style={[styles.forgotPasswordLink, dynamicStyles.forgotPasswordText]}>Forgot Password?</Text>
-                </Pressable>
-              </View>
-              <TextInput
-                placeholder="Enter your password"
-                placeholderTextColor={isDarkMode ? "#6b7280" : "#9ca3af"}
-                value={password}
-                secureTextEntry
-                onChangeText={setPassword}
-                style={[styles.input, dynamicStyles.input]}
-                autoComplete="password"
-              />
-            </View>
+            <Text style={[styles.helpText, dynamicStyles.helpText]}>
+              We'll send a 6-digit verification code to this email address. Make sure you have access to this email.
+            </Text>
 
             <Pressable
-              onPress={onSignInPress}
-              style={[styles.signInButton, (!emailAddress || !password) && styles.buttonDisabled]}
-              disabled={!emailAddress || !password}
+              onPress={handleResetPassword}
+              style={[styles.resetButton, !emailAddress.trim() && styles.buttonDisabled]}
+              disabled={!emailAddress.trim()}
             >
-              <Text style={styles.signInButtonText}>Sign In</Text>
+              <Text style={styles.resetButtonText}>Send Reset Code</Text>
             </Pressable>
-          </View>
 
-          <View style={styles.footer}>
-            <Text style={[styles.footerText, dynamicStyles.footerText]}>Don't have an account?</Text>
-            <Pressable onPress={handleSignUpPress}>
-              <Text style={styles.footerLink}>Create Account</Text>
+            <Pressable onPress={handleBackToSignIn} style={[styles.secondaryButton, dynamicStyles.secondaryButton]}>
+              <Text style={[styles.secondaryButtonText, dynamicStyles.secondaryButtonText]}>Back to Sign In</Text>
             </Pressable>
           </View>
         </View>
@@ -196,10 +193,10 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "#6366f1",
+    backgroundColor: "#f59e0b",
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#6366f1",
+    shadowColor: "#f59e0b",
     shadowOffset: {
       width: 0,
       height: 4,
@@ -222,6 +219,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     textAlign: "center",
+    paddingHorizontal: 20,
   },
   formContainer: {
     borderRadius: 20,
@@ -237,21 +235,12 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   inputContainer: {
-    marginBottom: 20,
-  },
-  passwordHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
+    marginBottom: 16,
   },
   inputLabel: {
     fontSize: 14,
     fontWeight: "bold",
-  },
-  forgotPasswordLink: {
-    fontSize: 12,
-    textDecorationLine: "underline",
+    marginBottom: 8,
   },
   input: {
     paddingHorizontal: 16,
@@ -260,13 +249,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 1,
   },
-  signInButton: {
-    backgroundColor: "#6366f1",
+  helpText: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 24,
+    textAlign: "center",
+  },
+  resetButton: {
+    backgroundColor: "#f59e0b",
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: "center",
-    marginTop: 8,
-    shadowColor: "#6366f1",
+    marginBottom: 12,
+    shadowColor: "#f59e0b",
     shadowOffset: {
       width: 0,
       height: 4,
@@ -275,28 +270,24 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
+  secondaryButton: {
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    borderWidth: 1,
+  },
   buttonDisabled: {
     backgroundColor: "#9ca3af",
     shadowOpacity: 0,
     elevation: 0,
   },
-  signInButtonText: {
+  resetButtonText: {
     color: "#ffffff",
     fontWeight: "bold",
     fontSize: 16,
   },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  footerText: {
-    fontSize: 14,
-    marginRight: 4,
-  },
-  footerLink: {
-    color: "#6366f1",
+  secondaryButtonText: {
     fontWeight: "bold",
-    fontSize: 14,
+    fontSize: 16,
   },
 })

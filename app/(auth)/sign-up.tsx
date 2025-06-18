@@ -1,57 +1,88 @@
 "use client"
 
 import { Header } from "@/components/Header"
+import { useModal } from "@/context/ModalContext"
 import { useTheme } from "@/context/ThemeContext"
+import { ErrorHandler } from "@/utils/ErrorHandler"
 import { useSignUp } from "@clerk/clerk-expo"
 import { router } from "expo-router"
 import React from "react"
-import { Alert, Pressable, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TextInput, View } from "react-native"
+import { Pressable, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TextInput, View } from "react-native"
 
 export default function SignUpScreen() {
   const { isLoaded, signUp, setActive } = useSignUp()
   const { isDarkMode } = useTheme()
+  const { showLoading, hideLoading, showSuccess, showError, showWarning } = useModal()
 
   const [emailAddress, setEmailAddress] = React.useState("")
   const [password, setPassword] = React.useState("")
   const [code, setCode] = React.useState("")
   const [pendingVerification, setPendingVerification] = React.useState(false)
-  const [isLoading, setIsLoading] = React.useState(false)
 
   const onSignUpPress = async () => {
     if (!isLoaded) return
-    setIsLoading(true)
+
+    showLoading("Creating your account...")
 
     try {
       const created = await signUp.create({ emailAddress, password })
       console.log("Created user:", created)
+
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" })
-      setPendingVerification(true)
-    } catch (err) {
+
+      hideLoading()
+
+      const successConfig = ErrorHandler.getSuccessMessage("signup")
+      showSuccess(successConfig.message, successConfig.title, false)
+
+      // Small delay to show success message before switching to verification
+      setTimeout(() => {
+        setPendingVerification(true)
+      }, 2000)
+    } catch (err: any) {
+      hideLoading()
       console.error("Signup Error:", JSON.stringify(err, null, 2))
-      Alert.alert("Error", "Failed to create account. Please try again.")
-    } finally {
-      setIsLoading(false)
+
+      const errorConfig = ErrorHandler.parseClerkError(err)
+
+      if (errorConfig.type === "warning") {
+        showWarning(errorConfig.message, errorConfig.title)
+      } else {
+        showError(errorConfig.message, errorConfig.title)
+      }
     }
   }
 
   const onVerifyPress = async () => {
     if (!isLoaded) return
-    setIsLoading(true)
+
+    showLoading("Verifying your email...")
 
     try {
       const signUpAttempt = await signUp.attemptEmailAddressVerification({ code })
+
       if (signUpAttempt.status === "complete") {
         await setActive({ session: signUpAttempt.createdSessionId })
-        router.replace("/")
+        hideLoading()
+
+        const successConfig = ErrorHandler.getSuccessMessage("verification")
+        showSuccess(successConfig.message, successConfig.title, false)
+
+        // Navigate after showing success
+        setTimeout(() => {
+          router.replace("/")
+        }, 2000)
       } else {
+        hideLoading()
         console.error(JSON.stringify(signUpAttempt, null, 2))
-        Alert.alert("Error", "Verification failed. Please try again.")
+        showError("Verification incomplete. Please try again.", "Verification Failed")
       }
-    } catch (err) {
-      console.error(JSON.stringify(err, null, 2))
-      Alert.alert("Error", "Invalid verification code. Please try again.")
-    } finally {
-      setIsLoading(false)
+    } catch (err: any) {
+      hideLoading()
+      console.error("Verification Error:", JSON.stringify(err, null, 2))
+
+      const errorConfig = ErrorHandler.parseClerkError(err)
+      showError(errorConfig.message, errorConfig.title)
     }
   }
 
@@ -141,10 +172,10 @@ export default function SignUpScreen() {
 
                 <Pressable
                   onPress={onVerifyPress}
-                  style={[styles.primaryButton, isLoading && styles.buttonDisabled]}
-                  disabled={isLoading || !code}
+                  style={[styles.primaryButton, !code && styles.buttonDisabled]}
+                  disabled={!code}
                 >
-                  <Text style={styles.primaryButtonText}>{isLoading ? "Verifying..." : "Verify Email"}</Text>
+                  <Text style={styles.primaryButtonText}>Verify Email</Text>
                 </Pressable>
 
                 <Pressable onPress={handleBackPress} style={[styles.secondaryButton, dynamicStyles.secondaryButton]}>
@@ -192,16 +223,16 @@ export default function SignUpScreen() {
                     autoComplete="password-new"
                   />
                   <Text style={[styles.passwordHint, dynamicStyles.passwordHint]}>
-                    Password must be at least 8 characters
+                    Password must be at least 8 characters and secure
                   </Text>
                 </View>
 
                 <Pressable
                   onPress={onSignUpPress}
-                  style={[styles.primaryButton, isLoading && styles.buttonDisabled]}
-                  disabled={isLoading || !emailAddress || !password}
+                  style={[styles.primaryButton, (!emailAddress || !password) && styles.buttonDisabled]}
+                  disabled={!emailAddress || !password}
                 >
-                  <Text style={styles.primaryButtonText}>{isLoading ? "Creating Account..." : "Create Account"}</Text>
+                  <Text style={styles.primaryButtonText}>Create Account</Text>
                 </Pressable>
               </View>
 
@@ -328,6 +359,8 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: {
     backgroundColor: "#9ca3af",
+    shadowOpacity: 0,
+    elevation: 0,
   },
   primaryButtonText: {
     color: "#ffffff",
