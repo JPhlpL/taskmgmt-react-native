@@ -1,6 +1,6 @@
 "use client"
 
-import { Header } from "@/components/Header"
+import { AuthHeader } from "@/components/AuthHeader"
 import { useModal } from "@/context/ModalContext"
 import { useTheme } from "@/context/ThemeContext"
 import { ErrorHandler } from "@/utils/ErrorHandler"
@@ -448,7 +448,7 @@ export default function ResetPasswordScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, dynamicStyles.safeArea]}>
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
-      <Header showBackButton onBackPress={currentStep === "email" ? handleBackToSignIn : handleBackStep} />
+      <AuthHeader showBackButton onBackPress={currentStep === "email" ? handleBackToSignIn : handleBackStep} />
       <KeyboardAvoidingView
         behavior={Platform.select({ ios: "padding", android: undefined })}
         style={[styles.container, dynamicStyles.container]}
@@ -529,11 +529,10 @@ export default function ResetPasswordScreen() {
                 <>
                   <View style={styles.otpContainer}>
                     {otp.map((digit, i) => {
-                      const inputRef = inputRefs.current[i]
                       return (
                         <TextInput
                           key={i}
-                          ref={inputRef}
+                          ref={inputRefs.current[i]}
                           value={digit}
                           onChangeText={(text) => handleOtpChange(text, i)}
                           onKeyPress={(e) => handleOtpKeyPress(e, i)}

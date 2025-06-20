@@ -1,6 +1,6 @@
 "use client"
 
-import { Header } from "@/components/Header"
+import { AuthHeader } from "@/components/AuthHeader"
 import { useModal } from "@/context/ModalContext"
 import { useTheme } from "@/context/ThemeContext"
 import { ErrorHandler } from "@/utils/ErrorHandler"
@@ -16,6 +16,7 @@ export default function SignInScreen() {
 
   const [emailAddress, setEmailAddress] = React.useState("")
   const [password, setPassword] = React.useState("")
+  const [showPassword, setShowPassword] = React.useState(false)
 
   const onSignInPress = async () => {
     if (!isLoaded) return
@@ -98,12 +99,15 @@ export default function SignInScreen() {
     footerText: {
       color: isDarkMode ? "#9ca3af" : "#6b7280",
     },
+    toggleText: {
+      color: "#6366f1",
+    },
   }
 
   return (
     <SafeAreaView style={[styles.safeArea, dynamicStyles.safeArea]}>
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
-      <Header />
+      <AuthHeader />
       <ScrollView style={[styles.container, dynamicStyles.container]}>
         <View style={styles.content}>
           <View style={styles.headerSection}>
@@ -139,15 +143,20 @@ export default function SignInScreen() {
                   <Text style={[styles.forgotPasswordLink, dynamicStyles.forgotPasswordText]}>Forgot Password?</Text>
                 </Pressable>
               </View>
-              <TextInput
-                placeholder="Enter your password"
-                placeholderTextColor={isDarkMode ? "#6b7280" : "#9ca3af"}
-                value={password}
-                secureTextEntry
-                onChangeText={setPassword}
-                style={[styles.input, dynamicStyles.input]}
-                autoComplete="password"
-              />
+              <View style={styles.passwordInputContainer}>
+                <TextInput
+                  placeholder="Enter your password"
+                  placeholderTextColor={isDarkMode ? "#6b7280" : "#9ca3af"}
+                  value={password}
+                  secureTextEntry={!showPassword}
+                  onChangeText={setPassword}
+                  style={[styles.input, dynamicStyles.input]}
+                  autoComplete="password"
+                />
+                <Pressable onPress={() => setShowPassword(!showPassword)} style={styles.toggleButton}>
+                  <Text style={[styles.toggleText, dynamicStyles.toggleText]}>{showPassword ? "Hide" : "Show"}</Text>
+                </Pressable>
+              </View>
             </View>
 
             <Pressable
@@ -256,6 +265,7 @@ const styles = StyleSheet.create({
   input: {
     paddingHorizontal: 16,
     paddingVertical: 14,
+    paddingRight: 60, // Add space for toggle button
     borderRadius: 12,
     fontSize: 16,
     borderWidth: 1,
@@ -298,5 +308,19 @@ const styles = StyleSheet.create({
     color: "#6366f1",
     fontWeight: "bold",
     fontSize: 14,
+  },
+  passwordInputContainer: {
+    position: "relative",
+  },
+  toggleButton: {
+    position: "absolute",
+    right: 16,
+    top: 0,
+    bottom: 0,
+    justifyContent: "center",
+  },
+  toggleText: {
+    fontSize: 14,
+    fontWeight: "600",
   },
 })

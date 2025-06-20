@@ -1,6 +1,6 @@
 "use client"
 
-import { Header } from "@/components/Header"
+import { AuthHeader } from "@/components/AuthHeader"
 import { useModal } from "@/context/ModalContext"
 import { useTheme } from "@/context/ThemeContext"
 import { ErrorHandler } from "@/utils/ErrorHandler"
@@ -18,6 +18,7 @@ export default function SignUpScreen() {
   const [password, setPassword] = React.useState("")
   const [code, setCode] = React.useState("")
   const [pendingVerification, setPendingVerification] = React.useState(false)
+  const [showPassword, setShowPassword] = React.useState(false)
 
   const onSignUpPress = async () => {
     if (!isLoaded) return
@@ -133,12 +134,15 @@ export default function SignUpScreen() {
     footerText: {
       color: isDarkMode ? "#9ca3af" : "#6b7280",
     },
+    toggleText: {
+      color: "#6366f1",
+    },
   }
 
   return (
     <SafeAreaView style={[styles.safeArea, dynamicStyles.safeArea]}>
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
-      <Header />
+      <AuthHeader />
       <ScrollView style={[styles.container, dynamicStyles.container]}>
         <View style={styles.content}>
           {pendingVerification ? (
@@ -213,15 +217,22 @@ export default function SignUpScreen() {
 
                 <View style={styles.inputContainer}>
                   <Text style={[styles.inputLabel, dynamicStyles.inputLabel]}>Password</Text>
-                  <TextInput
-                    placeholder="Create a password"
-                    placeholderTextColor={isDarkMode ? "#6b7280" : "#9ca3af"}
-                    secureTextEntry
-                    value={password}
-                    onChangeText={setPassword}
-                    style={[styles.input, dynamicStyles.input]}
-                    autoComplete="password-new"
-                  />
+                  <View style={styles.passwordInputContainer}>
+                    <TextInput
+                      placeholder="Create a password"
+                      placeholderTextColor={isDarkMode ? "#6b7280" : "#9ca3af"}
+                      secureTextEntry={!showPassword}
+                      value={password}
+                      onChangeText={setPassword}
+                      style={[styles.input, dynamicStyles.input]}
+                      autoComplete="password-new"
+                    />
+                    <Pressable onPress={() => setShowPassword(!showPassword)} style={styles.toggleButton}>
+                      <Text style={[styles.toggleText, dynamicStyles.toggleText]}>
+                        {showPassword ? "Hide" : "Show"}
+                      </Text>
+                    </Pressable>
+                  </View>
                   <Text style={[styles.passwordHint, dynamicStyles.passwordHint]}>
                     Password must be at least 8 characters and secure
                   </Text>
@@ -327,6 +338,7 @@ const styles = StyleSheet.create({
   input: {
     paddingHorizontal: 16,
     paddingVertical: 14,
+    paddingRight: 60, // Add space for toggle button
     borderRadius: 12,
     fontSize: 16,
     borderWidth: 1,
@@ -384,5 +396,19 @@ const styles = StyleSheet.create({
     color: "#6366f1",
     fontWeight: "bold",
     fontSize: 14,
+  },
+  passwordInputContainer: {
+    position: "relative",
+  },
+  toggleButton: {
+    position: "absolute",
+    right: 16,
+    top: 0,
+    bottom: 0,
+    justifyContent: "center",
+  },
+  toggleText: {
+    fontSize: 14,
+    fontWeight: "600",
   },
 })
