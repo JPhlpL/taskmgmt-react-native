@@ -1,17 +1,18 @@
 {
   "expo": {
-    "name": "taskmgmt-react-native",
-    "slug": "taskmgmt-react-native",
+    "name": "taskmgmt",
+    "slug": "taskmgmt",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "taskmgmtreactnative",
+    "scheme": "taskmgmt",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
     "android": {
+      "package": "com.jphlpl.taskmgmt",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
