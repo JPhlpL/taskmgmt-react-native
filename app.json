@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "taskmgmt-react-native",
-    "slug": "taskmgmt-react-native",
+    "name": "taskmgmt",
+    "slug": "taskmgmt",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/app-icon.png",
