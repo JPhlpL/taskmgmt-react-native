@@ -16,7 +16,8 @@
         "foregroundImage": "./assets/images/app-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.jphlpl.taskmgmtreactnative"
     },
     "web": {
       "bundler": "metro",
