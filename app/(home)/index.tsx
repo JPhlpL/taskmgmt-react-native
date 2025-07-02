@@ -2,6 +2,7 @@
 
 import { Header } from "@/components/Header"
 import { useTheme } from "@/context/ThemeContext"
+import ApiHealthCheck from "@/infrastructures/ApiHealthCheck"
 import { useUser } from "@clerk/clerk-expo"
 import { Pressable, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View } from "react-native"
 
@@ -58,6 +59,7 @@ export default function Dashboard() {
   return (
     <SafeAreaView style={[styles.safeArea, dynamicStyles.safeArea]}>
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
+      <ApiHealthCheck />
       <Header />
       <View style={[styles.container, dynamicStyles.container]}>
         <ScrollView style={styles.dashboardContainer}>

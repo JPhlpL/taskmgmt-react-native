@@ -1,7 +1,11 @@
-import axios from 'axios';
+import axios from 'axios'
 
+const baseURL = __DEV__
+  ? process.env.EXPO_PUBLIC_DEV_API_URL
+  : process.env.EXPO_PUBLIC_PROD_API_URL
+  
 const API = axios.create({
-  baseURL: 'https://your-fastapi-domain.com', // e.g., https://api.taskmgmt.dev
-});
+  baseURL,
+})
 
-export default API;
+export default API
