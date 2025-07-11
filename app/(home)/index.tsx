@@ -1,18 +1,31 @@
 "use client"
 
+import { CreateTaskModal } from "@/components/CreateTaskModal"
 import { Header } from "@/components/Header"
+import { TaskItem } from "@/components/TaskItem"
 import { useTheme } from "@/context/ThemeContext"
+import { useTasks } from "@/hooks/useTasks"
 import ApiHealthCheck from "@/infrastructures/ApiHealthCheck"
 import { useUser } from "@clerk/clerk-expo"
-import { Pressable, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View } from "react-native"
+import { useState } from "react"
+import { Pressable, RefreshControl, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View } from "react-native"
 
 export default function Dashboard() {
   const { user } = useUser()
   const { isDarkMode } = useTheme()
+  const { tasks, loading, refreshing, createTask, updateTask, deleteTask, refreshTasks, hasInitialLoad } = useTasks()
+  const [showCreateModal, setShowCreateModal] = useState(false)
 
-  const handleCreateTaskPress = () => {
-    // Handle create task action
-    console.log("Create task pressed")
+  const handleCreateTask = (details: string) => {
+    createTask(details)
+  }
+
+  const handleUpdateTask = (id: string, details: string) => {
+    updateTask(id, details)
+  }
+
+  const handleDeleteTask = (id: string) => {
+    deleteTask(id)
   }
 
   // Dynamic styles based on theme
@@ -44,16 +57,53 @@ export default function Dashboard() {
     statsSubtitle: {
       color: isDarkMode ? "#9ca3af" : "#6b7280",
     },
-    actionCard: {
-      backgroundColor: isDarkMode ? "#1a1a2e" : "#f8fafc",
-      borderColor: isDarkMode ? "#2d2d4a" : "#e5e7eb",
-    },
-    actionTitle: {
+    sectionTitle: {
       color: isDarkMode ? "#ffffff" : "#1f2937",
     },
-    actionSubtitle: {
+    emptyText: {
       color: isDarkMode ? "#9ca3af" : "#6b7280",
     },
+    emptyContainer: {
+      backgroundColor: isDarkMode ? "#12121a" : "#ffffff",
+      borderColor: isDarkMode ? "#374151" : "#e5e7eb",
+    },
+  }
+
+  // Determine what to show in the tasks section
+  const renderTasksContent = () => {
+    if (loading && !hasInitialLoad) {
+      // Show loading only on initial load
+      return (
+        <View style={[styles.emptyContainer, dynamicStyles.emptyContainer]}>
+          <Text style={[styles.emptyText, dynamicStyles.emptyText]}>Loading tasks...</Text>
+        </View>
+      )
+    }
+
+    if (hasInitialLoad && tasks.length === 0) {
+      // Show empty state only after initial load is complete
+      return (
+        <View style={[styles.emptyContainer, dynamicStyles.emptyContainer]}>
+          <Text style={[styles.emptyText, dynamicStyles.emptyText]}>
+            No tasks yet. Create your first task to get started!
+          </Text>
+        </View>
+      )
+    }
+
+    if (tasks.length > 0) {
+      // Show tasks
+      return (
+        <View style={styles.tasksList}>
+          {tasks.map((task) => (
+            <TaskItem key={task.id} task={task} onUpdate={handleUpdateTask} onDelete={handleDeleteTask} />
+          ))}
+        </View>
+      )
+    }
+
+    // Fallback - shouldn't reach here
+    return null
   }
 
   return (
@@ -62,7 +112,16 @@ export default function Dashboard() {
       <ApiHealthCheck />
       <Header />
       <View style={[styles.container, dynamicStyles.container]}>
-        <ScrollView style={styles.dashboardContainer}>
+        <ScrollView
+          style={styles.dashboardContainer}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={refreshTasks}
+              tintColor={isDarkMode ? "#ffffff" : "#000000"}
+            />
+          }
+        >
           <View style={styles.dashboardContent}>
             <View style={styles.header}>
               <View style={[styles.welcomeSection, dynamicStyles.welcomeSection]}>
@@ -79,25 +138,34 @@ export default function Dashboard() {
                     <Text style={styles.statsIconText}>📊</Text>
                   </View>
                   <View style={styles.statsContent}>
-                    <Text style={[styles.statsTitle, dynamicStyles.statsTitle]}>Quick Stats</Text>
-                    <Text style={[styles.statsSubtitle, dynamicStyles.statsSubtitle]}>Your productivity overview</Text>
+                    <Text style={[styles.statsTitle, dynamicStyles.statsTitle]}>Task Summary</Text>
+                    <Text style={[styles.statsSubtitle, dynamicStyles.statsSubtitle]}>
+                      {hasInitialLoad ? `${tasks.length} ${tasks.length === 1 ? "task" : "tasks"} total` : "Loading..."}
+                    </Text>
                   </View>
                 </View>
               </View>
 
-              <View style={[styles.actionCard, dynamicStyles.actionCard]}>
-                <Text style={[styles.actionTitle, dynamicStyles.actionTitle]}>Ready to be productive?</Text>
-                <Text style={[styles.actionSubtitle, dynamicStyles.actionSubtitle]}>
-                  Start managing your tasks efficiently
-                </Text>
-                <Pressable style={styles.actionButton} onPress={handleCreateTaskPress}>
-                  <Text style={styles.actionButtonText}>Create Task</Text>
+              <View style={styles.createTaskSection}>
+                <Pressable style={styles.createTaskButton} onPress={() => setShowCreateModal(true)}>
+                  <Text style={styles.createTaskButtonText}>+ Create New Task</Text>
                 </Pressable>
               </View>
+            </View>
+
+            <View style={styles.tasksSection}>
+              <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>Your Tasks</Text>
+              {renderTasksContent()}
             </View>
           </View>
         </ScrollView>
       </View>
+
+      <CreateTaskModal
+        visible={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onCreate={handleCreateTask}
+      />
     </SafeAreaView>
   )
 }
@@ -189,32 +257,50 @@ const styles = StyleSheet.create({
   statsSubtitle: {
     fontSize: 14,
   },
-  actionCard: {
-    borderRadius: 16,
-    padding: 24,
-    alignItems: "center",
-    borderWidth: 1,
+  createTaskSection: {
+    marginBottom: 16,
   },
-  actionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  actionSubtitle: {
-    fontSize: 14,
-    marginBottom: 20,
-    textAlign: "center",
-  },
-  actionButton: {
+  createTaskButton: {
     backgroundColor: "#6366f1",
-    paddingVertical: 12,
+    paddingVertical: 16,
     paddingHorizontal: 24,
-    borderRadius: 8,
+    borderRadius: 12,
+    alignItems: "center",
+    shadowColor: "#6366f1",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  actionButtonText: {
+  createTaskButtonText: {
     color: "#ffffff",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  tasksSection: {
+    flex: 1,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 16,
+  },
+  tasksList: {
+    flex: 1,
+  },
+  emptyContainer: {
+    borderRadius: 12,
+    padding: 32,
+    alignItems: "center",
+    borderWidth: 1,
+    borderStyle: "dashed",
+  },
+  emptyText: {
+    fontSize: 16,
+    textAlign: "center",
+    lineHeight: 24,
   },
 })
