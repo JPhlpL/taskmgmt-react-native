@@ -79,7 +79,7 @@ export const useTasks = () => {
           `${process.env.EXPO_PUBLIC_DEV_API_URL || process.env.EXPO_PUBLIC_PROD_API_URL}/?email=${encodeURIComponent(userEmail)}`,
           {
             headers: {
-              "x-auth-token": token,
+               "Authorization": `Bearer ${token}`
             },
           },
         )
@@ -148,8 +148,8 @@ export const useTasks = () => {
           {
             method: "POST",
             headers: {
-              "Content-Type": "application/json",
-              "x-auth-token": token,
+               "Authorization": `Bearer ${token}`,
+               "Content-Type": "application/json",  // only on POST/PUT
             },
             body: JSON.stringify(taskData),
           },
@@ -214,8 +214,8 @@ export const useTasks = () => {
           {
             method: "PUT",
             headers: {
-              "Content-Type": "application/json",
-              "x-auth-token": token,
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json",  // only on POST/PUT
             },
             body: JSON.stringify(taskData),
           },
@@ -266,7 +266,8 @@ export const useTasks = () => {
           {
             method: "DELETE",
             headers: {
-              "x-auth-token": token,
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json",  // only on POST/PUT
             },
           },
         )
