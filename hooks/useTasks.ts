@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 
 export const useTasks = () => {
   const { user } = useUser()
-  const { getToken } = useAuth()
+  const { getToken, isLoaded } = useAuth()
   const { showError, showSuccess, showLoading, hideLoading } = useModal()
 
   const [tasks, setTasks] = useState<Task[]>([])
@@ -37,13 +37,15 @@ export const useTasks = () => {
     }
   }, [])
 
+  // Grab the RS256-signed Session JWT you just configured:
   const getValidToken = async (): Promise<string> => {
-    // Use Clerk's getToken instead of hardcoded token
-    const token = process.env.API_TOKEN // On this part, it must be something like id token from clerk then pass it to fastapi
-
-    if (!token) {
-      throw new Error("No authentication token available")
+    if (!isLoaded) {
+      throw new Error('Authentication not ready yet')
     }
+    // no template name = default Session token
+    const token = await getToken({ template: 'taskmgmt-clerk-api-auth-token' })
+    console.log('[Auth] fetched JWT:', token);
+    if (!token) throw new Error('Failed to get auth token')
     return token
   }
 
