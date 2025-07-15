@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/app-icon.png",
-    "scheme": "taskmgmtreactnative",
+    "scheme": "taskmgmtv1",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -17,7 +17,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.jphlpl.taskmgmtreactnative"
+      "package": "com.jphlpl.taskmgmtv1"
     },
     "web": {
       "bundler": "metro",

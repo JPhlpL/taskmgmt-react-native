@@ -3,6 +3,7 @@
 import { useModal } from "@/context/ModalContext"
 import type { CreateTaskRequest, Task, UpdateTaskRequest } from "@/types/task"
 import { useAuth, useUser } from "@clerk/clerk-expo"
+import Constants from "expo-constants"
 import { useCallback, useEffect, useRef, useState } from "react"
 
 export const useTasks = () => {
@@ -37,10 +38,15 @@ export const useTasks = () => {
     }
   }, [])
 
-  // Base URL selection (dev first, then prod)
-  const baseUrl =
-    process.env.EXPO_PUBLIC_PROD_API_URL ?? // on this one, if you put the prod api url, it will fetches first
-    process.env.EXPO_PUBLIC_DEV_API_URL
+  // const baseUrl =
+  //   process.env.EXPO_PUBLIC_PROD_API_URL ?? // on this one, if you put the prod api url, it will fetches first
+  //   process.env.EXPO_PUBLIC_DEV_API_URL
+
+  // pull your prod URL from your EAS env into expoConfig.extra
+  const { EXPO_PUBLIC_PROD_API_URL } = (Constants.expoConfig!.extra as {
+    EXPO_PUBLIC_PROD_API_URL: string
+  })
+  const baseUrl = EXPO_PUBLIC_PROD_API_URL
 
   // Helper: performs a fetch, adds auth header, checks status, returns JSON
   const apiFetch = useCallback(
