@@ -2,16 +2,6 @@
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
-## To-Do'
-
-```bash
-1. Need to fix UI for signin and signup
-2. Need to fix fetching logs, print error codes and show a popup for that
-3. Fix UI Landing Page
-4. Fetch all possible erros on the Clerk Auth Login like password, etc
-5. Customize Verify Token email
-```
-
 ## Get started
 
 1. Install dependencies
