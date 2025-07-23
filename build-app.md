@@ -1,5 +1,6 @@
 ToDo: Make a walkthrough on how to build this app
 
+``if modified url need to do this first -> npx expo start -c``
 1. Must first delete the android folder if exists
 2. npx expo prebuild --platform android
 3. modify the AndroidManifest.xml (taskmgmt\android\app\src\main) with this
